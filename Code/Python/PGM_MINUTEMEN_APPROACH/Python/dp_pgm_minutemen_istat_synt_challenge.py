@@ -21,7 +21,7 @@ OS = platform.system()                                                          
 
 """# All Globals"""
 
-benchmark = True
+benchmark = False
 
 """# All Program checks"""
 
@@ -82,8 +82,8 @@ else:
 """# Schema Generation via Schemagen"""
 
 if benchmark == True: 
-  #os.system('python ./nist-synthetic-data-2021/extensions/schemagen.py ./adult.csv --max_categorical 40')
-  !python ./nist-synthetic-data-2021/extensions/schemagen.py /content/nist-synthetic-data-2021/extensions/datasets/raw/adult.csv --max_categorical 40
+  os.system('python ./nist-synthetic-data-2021/extensions/schemagen.py ./adult.csv --max_categorical 40')
+  #!python ./nist-synthetic-data-2021/extensions/schemagen.py /content/nist-synthetic-data-2021/extensions/datasets/raw/adult.csv --max_categorical 40
 else:
   os.system('python ./nist-synthetic-data-2021/extensions/schemagen.py ./satgpa.csv --max_categorical 100')
   #!python ./nist-synthetic-data-2021/extensions/schemagen.py ./satgpa.csv --max_categorical 100
