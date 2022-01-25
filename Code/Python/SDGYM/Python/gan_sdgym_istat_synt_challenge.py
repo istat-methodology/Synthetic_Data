@@ -19,6 +19,7 @@ Installation of all required libraries: SDGym
 
 os.system('pip install gdown')
 os.system('pip install sdgym')
+os.system('pip install pandas')
 
 """# All Imports"""
 
