@@ -32,9 +32,12 @@ from sdv.evaluation import evaluate
 
 """# All Globals"""
 
-benchmark = True
+benchmark = False
+#benchmark = True
 gaussian_copula_synth_model = True
 ctgan_synth_model = True
+#dataset = 'satgpa'
+dataset = 'acs'
 
 """# All Settings"""
 
@@ -49,16 +52,31 @@ def explore_data(data):
   print("\nTail of Data: \n", data.tail())
   print("\nShape of Data: ", data.shape)
   print("\nInformation about Data: \n")
-  data.info()
+  try: 
+    data.info()
+  except: 
+    pass
   print("\nTypes of Data attributes: \n")
-  data.dtypes
+  try: 
+    data.dtypes
+  except: 
+    pass
   print("\nSummary of all numerical fields in the dataset: \n")
-  data.describe(include = [np.number])
+  try: 
+    data.describe(include = [np.number])
+  except: 
+    pass
   print("\nSummary of all categorical fields in the dataset: \n")
-  data.describe(include = ['O'])
+  try: 
+    data.describe(include = ['O'])
+  except: 
+    pass
   print("\nLoop Through Each Column and Check for nulls: \n")
-  for i in range(len(data.columns)):
-      print(data.columns[i] + ": " + str(data[data.columns[i]].isna().sum()))
+  try: 
+    for i in range(len(data.columns)):
+        print(data.columns[i] + ": " + str(data[data.columns[i]].isna().sum()))
+  except: 
+    pass
 
 """# Data Download - ACS and SatGPA"""
 
@@ -66,15 +84,16 @@ if benchmark == True:
   data = load_tabular_demo('student_placements')
   n_to_generate = data.shape[0]
 else: 
-  if not os.path.exists("./satgpa.csv"):
+  if dataset is 'satgpa':
+    if not os.path.exists("./satgpa.csv"):
       os.system('gdown --id "1NNVF1LhBDkW_KKp5_QW8cAiQDFatzWMy" --output "./satgpa.csv"')
-
-  '''
-  if not os.path.exists("./acs_dataset.zip"):
-      os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.zip"')
-      if OS == "Linux":
-          os.system('unzip -o -n "./acs_dataset.zip" -d "./"')
-  '''
+      data = pd.read_csv('./satgpa.csv')
+      n_to_generate = data.shape[0]
+  elif dataset is 'acs':
+    if not os.path.exists("./acs_dataset.csv"):
+      os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.csv"')
+      data = pd.read_csv('./acs.csv', nrows = 200)
+      n_to_generate = 200
 
 """# Exploratory Analysis"""
 
@@ -140,6 +159,6 @@ for sd in synthetic_data:
     print("Error")
 
 for sas in scored_and_synth_data:
-  sas[1].to_csv('synth_data_generated_by_method_'+sas[0].lower()+'_score_'+str(round(sas[2],3))+'.csv', sep='\t')
+  sas[1].to_csv(dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'_score_'+str(round(sas[2],3))+'.csv', sep='\t')
 
 print("Global Exectution Time: ", timeit.default_timer() - start_global_time)
