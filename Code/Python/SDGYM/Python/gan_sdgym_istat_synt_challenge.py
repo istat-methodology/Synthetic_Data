@@ -89,14 +89,19 @@ else:
     if not os.path.exists("./satgpa.csv"):
       os.system('gdown --id "1NNVF1LhBDkW_KKp5_QW8cAiQDFatzWMy" --output "./satgpa.csv"')
       data = pd.read_csv('./satgpa.csv')
+      data = data.drop(['sat_sum'], axis=1)
+      data.to_csv('satgpa_no_sum.csv', sep=',')
       n_to_generate = data.shape[0]
   elif dataset is 'acs':
     if not os.path.exists("./acs_dataset.zip"):
       os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.zip"')
       if OS == "Linux":
           os.system('unzip -o -n "./acs_dataset.zip" -d "./"')      
-      data = pd.read_csv('./acs_dataset.csv', nrows = 200)
-      n_to_generate = 200
+      data = pd.read_csv('./acs_dataset.csv')
+      n_to_generate = data.shape[0]
+
+      #data = pd.read_csv('./acs_dataset.csv', nrows = 1000)
+      #n_to_generate = 1000
 
 """# Exploratory Analysis"""
 
@@ -163,7 +168,9 @@ for sd in synthetic_data:
   except:
     print("Error")
 
-for sas in scored_and_synth_data:
-  sas[1].to_csv(dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'_score_'+str(round(sas[2],3))+'.csv', sep='\t')
+total_time = timeit.default_timer() - start_global_time
 
-print("Global Exectution Time: ", timeit.default_timer() - start_global_time)
+for sas in scored_and_synth_data:
+  sas[1].to_csv(dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.csv', sep=',')
+
+print("Global Exectution Time: ", total_time)
