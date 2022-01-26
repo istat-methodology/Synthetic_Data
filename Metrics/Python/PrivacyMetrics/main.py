@@ -1,6 +1,6 @@
 import argparse
 import pandas as pd
-import sdnist
+#import sdnist
 import privacy_metric
 import matplotlib.pyplot as plt
 import numpy as np
