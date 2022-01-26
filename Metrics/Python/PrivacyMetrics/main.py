@@ -4,8 +4,7 @@ import pandas as pd
 import privacy_metric
 import matplotlib.pyplot as plt
 import numpy as np
-
-
+from sdv.evaluation import evaluate
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()   
@@ -34,6 +33,8 @@ if __name__ == "__main__":
     print("Matched: \n",matched)
     print("Percents: \n",percents)
     print("Number of Apparent Matches: ",len_df)
+    score = evaluate(dataset, groundtruth)
+    print("SDGym Score: ", score)
     
     #Histogram
     plt.figure(figsize = (10,10))
