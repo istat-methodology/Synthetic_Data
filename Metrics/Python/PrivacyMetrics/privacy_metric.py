@@ -1,6 +1,6 @@
 
 import pandas as pd
-
+import pdb
 
 def cellchange(df1, df2, quasi, exclude_cols):
     uniques1 = df1.drop_duplicates(subset=quasi, keep=False)
@@ -15,6 +15,7 @@ def match(df, cols):
     for c in cols:
         c_x = c + "_x"
         c_y = c + "_y"
+
         S = S + (df[c_x] == df[c_y]).astype(int)
     S = (S/len(cols))*100
-    return S
+    return (S, len(df))

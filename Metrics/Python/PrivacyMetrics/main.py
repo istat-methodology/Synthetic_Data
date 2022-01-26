@@ -29,7 +29,11 @@ if __name__ == "__main__":
     x = args.x
     Xs = x.split(",")
     Xs = [s.strip(" ") for s in Xs]
-    percents, uniques1, uniques2, matched  = privacy_metric.cellchange(groundtruth, dataset, Qs, Xs)
+    (percents, len_df), uniques1, uniques2, matched  = privacy_metric.cellchange(groundtruth, dataset, Qs, Xs)
+        
+    print("Matched: \n",matched)
+    print("Percents: \n",percents)
+    print("Number of Apparent Matches: ",len_df)
     
     #Histogram
     plt.figure(figsize = (10,10))
