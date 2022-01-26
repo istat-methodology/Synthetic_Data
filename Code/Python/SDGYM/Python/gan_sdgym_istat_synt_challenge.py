@@ -38,6 +38,7 @@ gaussian_copula_synth_model = True
 ctgan_synth_model = True
 #dataset = 'satgpa'
 dataset = 'acs'
+model_names = []
 
 """# All Settings"""
 
@@ -90,9 +91,11 @@ else:
       data = pd.read_csv('./satgpa.csv')
       n_to_generate = data.shape[0]
   elif dataset is 'acs':
-    if not os.path.exists("./acs_dataset.csv"):
-      os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.csv"')
-      data = pd.read_csv('./acs.csv', nrows = 200)
+    if not os.path.exists("./acs_dataset.zip"):
+      os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.zip"')
+      if OS == "Linux":
+          os.system('unzip -o -n "./acs_dataset.zip" -d "./"')      
+      data = pd.read_csv('./acs_dataset.csv', nrows = 200)
       n_to_generate = 200
 
 """# Exploratory Analysis"""
@@ -107,7 +110,8 @@ In mathematical terms, a copula is a distribution over the unit cube [0,1]d whic
 if gaussian_copula_synth_model == True:
   model = GaussianCopula()
   model.fit(data)
-  model.save('gaussian_copula.pkl')
+  model_names.append(dataset+'_gaussian_copula.pkl')
+  model.save(model_names[-1])
 
 """# Synthetic Data Generation via Conditional GAN
 
@@ -122,17 +126,18 @@ if ctgan_synth_model == True:
     discriminator_dim=(256, 256, 256)
   )
   model.fit(data)
-  model.save('ctgan.pkl')
+  model_names.append(dataset+'_ctgan.pkl')
+  model.save(model_names[-1])
 
 """# Model Loading and Preparation"""
 
 model_file = []
 model_to_load = []
 if gaussian_copula_synth_model == True:
-  model_file.append('gaussian_copula.pkl')
+  model_file.append(model_names[0])
   model_to_load.append(("GaussianCopula", GaussianCopula))
 if ctgan_synth_model == True:
-  model_file.append('ctgan.pkl')
+  model_file.append(model_names[1])
   model_to_load.append(("CTGAN", CTGAN))
 
 loaded_model = []
