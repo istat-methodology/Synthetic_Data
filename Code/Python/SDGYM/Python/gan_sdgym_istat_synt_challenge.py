@@ -36,8 +36,8 @@ benchmark = False
 #benchmark = True
 gaussian_copula_synth_model = True
 ctgan_synth_model = True
-#dataset = 'satgpa'
-dataset = 'acs'
+dataset = 'satgpa'
+#dataset = 'acs'
 model_names = []
 
 """# All Settings"""
