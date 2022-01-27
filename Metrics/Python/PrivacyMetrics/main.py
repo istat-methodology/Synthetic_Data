@@ -5,6 +5,7 @@ import privacy_metric
 import matplotlib.pyplot as plt
 import numpy as np
 #from sdv.evaluation import evaluate
+import pdb
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()   
@@ -20,6 +21,8 @@ if __name__ == "__main__":
     dataset = pd.read_csv(args.dataset)  
     #groundtruth = pd.read_csv(args.groundtruth, dtypye=dtypes)
     groundtruth = pd.read_csv(args.groundtruth)
+    print(args.dataset)
+    pdb.set_trace()
     
     
     q = args.q
@@ -41,4 +44,5 @@ if __name__ == "__main__":
     plt.title('Percentage of raw synthetic records that had an apparent match with groundtruth dataset')
     percents.hist()
     plt.xlim(0,100)
+    plt.savefig('privacy_metric.png')
     plt.show()

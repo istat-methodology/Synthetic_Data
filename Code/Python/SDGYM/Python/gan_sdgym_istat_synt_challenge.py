@@ -34,10 +34,10 @@ from sdv.evaluation import evaluate
 
 benchmark = False
 #benchmark = True
-gaussian_copula_synth_model = True
+gaussian_copula_synth_model = False
 ctgan_synth_model = True
-dataset = 'satgpa'
-#dataset = 'acs'
+#dataset = 'satgpa'
+dataset = 'acs'
 model_names = []
 
 """# All Settings"""
@@ -97,11 +97,11 @@ else:
       os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.zip"')
       if OS == "Linux":
           os.system('unzip -o -n "./acs_dataset.zip" -d "./"')      
-      data = pd.read_csv('./acs_dataset.csv')
-      n_to_generate = data.shape[0]
+      #data = pd.read_csv('./acs_dataset.csv')
+      #n_to_generate = data.shape[0]
 
-      #data = pd.read_csv('./acs_dataset.csv', nrows = 1000)
-      #n_to_generate = 1000
+      data = pd.read_csv('./acs_dataset.csv', nrows = 4000)
+      n_to_generate = 4000
 
 """# Exploratory Analysis"""
 
@@ -126,7 +126,7 @@ Modeling the probability distribution of rows in tabular data and generating rea
 if ctgan_synth_model == True:
   model = CTGAN(
     epochs=500,
-    batch_size=100,
+    batch_size=256,
     generator_dim=(256, 256, 256),
     discriminator_dim=(256, 256, 256)
   )
@@ -142,7 +142,7 @@ if gaussian_copula_synth_model == True:
   model_file.append(model_names[0])
   model_to_load.append(("GaussianCopula", GaussianCopula))
 if ctgan_synth_model == True:
-  model_file.append(model_names[1])
+  model_file.append(model_names[-1])
   model_to_load.append(("CTGAN", CTGAN))
 
 loaded_model = []
