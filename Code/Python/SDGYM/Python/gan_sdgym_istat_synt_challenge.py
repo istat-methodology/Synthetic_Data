@@ -100,8 +100,8 @@ else:
       #data = pd.read_csv('./acs_dataset.csv')
       #n_to_generate = data.shape[0]
 
-      data = pd.read_csv('./acs_dataset.csv', nrows = 4000)
-      n_to_generate = 4000
+      data = pd.read_csv('./acs_dataset.csv', nrows = 1000)
+      n_to_generate = 1000
 
 """# Exploratory Analysis"""
 
@@ -126,7 +126,7 @@ Modeling the probability distribution of rows in tabular data and generating rea
 if ctgan_synth_model == True:
   model = CTGAN(
     epochs=500,
-    batch_size=256,
+    batch_size=100,
     generator_dim=(256, 256, 256),
     discriminator_dim=(256, 256, 256)
   )
