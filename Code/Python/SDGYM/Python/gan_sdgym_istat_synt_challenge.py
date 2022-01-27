@@ -97,11 +97,11 @@ else:
       os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.zip"')
       if OS == "Linux":
           os.system('unzip -o -n "./acs_dataset.zip" -d "./"')      
-      #data = pd.read_csv('./acs_dataset.csv')
-      #n_to_generate = data.shape[0]
+      data_f = pd.read_csv('./acs_dataset.csv')
+      n_to_generate = data_f.shape[0]
 
-      data = pd.read_csv('./acs_dataset.csv', nrows = 1000)
-      n_to_generate = 1000
+      data = pd.read_csv('./acs_dataset.csv', nrows = 3000)
+      #n_to_generate = 1000
 
 """# Exploratory Analysis"""
 
