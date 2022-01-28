@@ -27,7 +27,7 @@ import timeit
 import numpy as np
 import pandas as pd
 from sdv.demo import load_tabular_demo
-from sdv.tabular import GaussianCopula, CTGAN
+from sdv.tabular import GaussianCopula, CTGAN, CopulaGAN
 from sdv.evaluation import evaluate
 
 """# All Globals"""
@@ -35,7 +35,8 @@ from sdv.evaluation import evaluate
 benchmark = False
 #benchmark = True
 gaussian_copula_synth_model = False
-ctgan_synth_model = True
+ctgan_synth_model = False
+copula_gan_synth_model = True
 #dataset = 'satgpa'
 dataset = 'acs'
 model_names = []
@@ -44,7 +45,9 @@ model_names = []
 
 start_global_time = timeit.default_timer()
 pd.set_option('display.max_columns', 500) 
-pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_rows', 500) 
+if ctgan_synth_model == True and copula_gan_synth_model == True: # Only one Gan 
+  ctgan_synth_model = False
 
 """# All Functions Definitions"""
 
@@ -97,11 +100,11 @@ else:
       os.system('gdown --id "1mKZfDieGBJP-cS-R7_i3zVKVawXThfUc" --output "./acs_dataset.zip"')
       if OS == "Linux":
           os.system('unzip -o -n "./acs_dataset.zip" -d "./"')      
-      data_f = pd.read_csv('./acs_dataset.csv')
-      n_to_generate = data_f.shape[0]
+      #data = pd.read_csv('./acs_dataset.csv')
+      #n_to_generate = data.shape[0]
 
-      data = pd.read_csv('./acs_dataset.csv', nrows = 3000)
-      #n_to_generate = 1000
+      data = pd.read_csv('./acs_dataset.csv', nrows = 1000)
+      n_to_generate = 1000
 
 """# Exploratory Analysis"""
 
@@ -134,6 +137,22 @@ if ctgan_synth_model == True:
   model_names.append(dataset+'_ctgan.pkl')
   model.save(model_names[-1])
 
+"""# Synthetic Data Generation via Copula GAN
+
+The CopulaGAN model is a variation of the CTGAN Model which takes advantage of the CDF based transformation that the GaussianCopulas apply to make the underlying CTGAN model task of learning the data easier.
+"""
+
+if copula_gan_synth_model == True:
+  model = CopulaGAN(
+    epochs=500,
+    batch_size=100,
+    generator_dim=(256, 256, 256),
+    discriminator_dim=(256, 256, 256)
+  )
+  model.fit(data)
+  model_names.append(dataset+'_copulagan.pkl')
+  model.save(model_names[-1])
+
 """# Model Loading and Preparation"""
 
 model_file = []
@@ -144,6 +163,9 @@ if gaussian_copula_synth_model == True:
 if ctgan_synth_model == True:
   model_file.append(model_names[-1])
   model_to_load.append(("CTGAN", CTGAN))
+elif copula_gan_synth_model == True:
+  model_file.append(model_names[-1])
+  model_to_load.append(("COPULAGAN", CopulaGAN))
 
 loaded_model = []
 for mf,ml in zip(model_file, model_to_load): 
