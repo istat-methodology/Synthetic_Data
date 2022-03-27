@@ -141,18 +141,20 @@ data.ORA_MIN_CHIAMATA =pd.to_datetime(data.ORA_MIN_CHIAMATA , format='%H%M%S')
 
 explore_data(data)
 
-
-
 """# **Synthetic Data Generation via Gaussian Copula Method**
 
 In mathematical terms, a copula is a distribution over the unit cube [0,1]d which is constructed from a multivariate normal distribution over Rd by using the probability integral transform. Intuitively, a copula is a mathematical function that allows us to describe the joint distribution of multiple random variables by analyzing the dependencies between their marginal distributions.
 """
 
 if gaussian_copula_synth_model == True:
+  train_start_time = timeit.default_timer()
+
   model = GaussianCopula()
   model.fit(data)
   model_names.append(dataset+'_gaussian_copula.pkl')
   model.save(model_names[-1])
+
+  print("Gaussian Copula Training Exectution Time: ", timeit.default_timer() - train_start_time)
 
 """# **Synthetic Data Generation via Conditional GAN**
 
@@ -162,6 +164,8 @@ Modeling the probability distribution of rows in tabular data and generating rea
 """
 
 if ctgan_synth_model == True:
+  train_start_time = timeit.default_timer()
+  
   model = CTGAN(
     epochs=500,
     batch_size=100,
@@ -172,6 +176,8 @@ if ctgan_synth_model == True:
   model_names.append(dataset+'_ctgan.pkl')
   model.save(model_names[-1])
 
+  print("CTGAN Training Exectution Time: ", timeit.default_timer() - train_start_time)
+
 """# **Synthetic Data Generation via Copula GAN**
 
 The CopulaGAN model is a variation of the CTGAN Model which takes advantage of the CDF based transformation that the GaussianCopulas apply to make the underlying CTGAN model task of learning the data easier.
@@ -180,6 +186,8 @@ The CopulaGAN model is a variation of the CTGAN Model which takes advantage of t
 """
 
 if copula_gan_synth_model == True:
+  train_start_time = timeit.default_timer()
+  
   model = CopulaGAN(
     epochs=500,
     batch_size=100,
@@ -189,6 +197,8 @@ if copula_gan_synth_model == True:
   model.fit(data)
   model_names.append(dataset+'_copulagan.pkl')
   model.save(model_names[-1])
+
+  print("Copula GAN Training Exectution Time: ", timeit.default_timer() - train_start_time)
 
 """# **Model Loading and Preparation**"""
 
@@ -227,6 +237,23 @@ for sd in synthetic_data:
   except:
     print("Error")
 
+"""#**Post Cleaning of Data**
+
+"""
+
+sas = scored_and_synth_data[0]
+
+print(sas[1].DATA_CHIAMATA.astype("str").str.split(' ').str.get(0).str.replace('-', ''))
+print(sas[1].ORA_MIN_CHIAMATA.astype("str").str.split(' ').str.get(1).str.replace(':', ''))
+
+if dataset is 'telephony':
+  sas = scored_and_synth_data[0]
+  sas[1].DATA_CHIAMATA = sas[1].DATA_CHIAMATA.astype("str").str.split(' ').str.get(0).str.replace('-', '')
+  sas[1].ORA_MIN_CHIAMATA = sas[1].ORA_MIN_CHIAMATA.astype("str").str.split(' ').str.get(1).str.replace(':', '')
+  
+  print(sas[1].info())
+  print(sas[1].head())
+
 total_time = timeit.default_timer() - start_global_time
 
 for sas in scored_and_synth_data:
@@ -236,34 +263,3 @@ for sas in scored_and_synth_data:
   sas[1].to_excel(dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.xlsx')
 
 print("Global Exectution Time: ", total_time)
-
-#import seaborn as sns
-
-#sns.set_theme(style="whitegrid")
-
-import pandas as pd
-
-outputData=pd.read_excel("/content/telephony_synth_data_generated_by_method_copulagantotal_time_2706.17_score_0.37.xlsx")
-
-outputData.COD_CELLA_CHIAMATA.plot.bar()
-
-
-
-
-
-import pandas as pd
-pd.read_excel("")
-
-inputData=sas[1]
-#inputData.COD_CELLA_CHIAMATA.value_counts()
-pd.DataFrame(inputData).COD_CELLA_CHIAMATA.plot()#.bar()
-
-data.COD_CELLA_CHIAMATA.value_counts()
-
-
-
-#from google.colab import drive
-#drive.mount('/content/drive')
-
-#pd.read_csv("/content/drive/MyDrive/fatture-01_05_2020-01_08_2020.csv",sep=";")
-
