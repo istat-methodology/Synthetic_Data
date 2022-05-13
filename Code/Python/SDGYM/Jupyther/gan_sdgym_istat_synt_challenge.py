@@ -64,13 +64,13 @@ copula_gan_synth_model = True
 dataset = 'telephony'   # satgpa, acs, telephony
 model_names = []
 limit_to_generate = 1000  # or None
-training = False
+training = True
 save_score = False
 test_model_name = "telephony_copulagan.pkl"
 
 """#**All Hyper-parameters**"""
 
-epochs = 2
+epochs = 100
 
 """# **All Settings**"""
 
