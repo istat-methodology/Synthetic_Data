@@ -51,11 +51,8 @@ from sdv.tabular import GaussianCopula, CTGAN, CopulaGAN
 from sdv.evaluation import evaluate
 from sdv.metrics.tabular import CSTest, KSTest                                      # Statistical Metrics
 from sdv.metrics.tabular import BNLikelihood, BNLogLikelihood, GMLogLikelihood      # Likelihood Metrics¶
-<<<<<<< HEAD
-=======
 from sdv.metrics.tabular import LogisticDetection, SVCDetection                     # Detection Metrics
 from sdv.metrics.tabular import MulticlassDecisionTreeClassifier                    # Machine Learning Efficacy Metrics¶
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
 from sdv.metrics.tabular import NumericalLR                                         # Privacy Metrics
 
 """# **All Globals**"""
@@ -68,16 +65,12 @@ dataset = 'telephony'   # satgpa, acs, telephony
 model_names = []
 limit_to_generate = 1000  # or None
 training = True
-<<<<<<< HEAD
-epochs = 2
-=======
 save_score = False
 test_model_name = "telephony_copulagan.pkl"
 
 """#**All Hyper-parameters**"""
 
-epochs = 100
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
+epochs = 1000
 
 """# **All Settings**"""
 
@@ -192,11 +185,7 @@ In mathematical terms, a copula is a distribution over the unit cube [0,1]d whic
 if gaussian_copula_synth_model == True and training is True:
   model = GaussianCopula()
   model.fit(data)
-<<<<<<< HEAD
-  model_names.append(dataset+'_gaussian_copula.pkl')
-=======
   model_names.append(model_path+dataset+'_gaussian_copula.pkl')
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
   model.save(model_names[-1])
 
 """# **Synthetic Data Generation via Conditional GAN**
@@ -214,11 +203,7 @@ if ctgan_synth_model == True and training is True:
     discriminator_dim=(256, 256, 256)
   )
   model.fit(data)
-<<<<<<< HEAD
-  model_names.append(dataset+'_ctgan.pkl')
-=======
   model_names.append(model_path+dataset+'_ctgan.pkl')
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
   model.save(model_names[-1])
 
 """# **Synthetic Data Generation via Copula GAN**
@@ -236,38 +221,11 @@ if copula_gan_synth_model == True and training is True:
     discriminator_dim=(256, 256, 256)
   )
   model.fit(data)
-<<<<<<< HEAD
-  model_names.append(dataset+'_copulagan.pkl')
-=======
   model_names.append(model_path+dataset+'_copulagan.pkl')
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
   model.save(model_names[-1])
 
 """# **Model Loading and Preparation**"""
 
-<<<<<<< HEAD
-model_file = []
-model_to_load = []
-if gaussian_copula_synth_model == True:
-  model_file.append(model_names[0])
-  model_to_load.append(("GaussianCopula", GaussianCopula))
-if ctgan_synth_model == True:
-  model_file.append(model_names[-1])
-  model_to_load.append(("CTGAN", CTGAN))
-elif copula_gan_synth_model == True:
-  model_file.append(model_names[-1])
-  model_to_load.append(("COPULAGAN", CopulaGAN))
-
-loaded_model = []
-for mf,ml in zip(model_file, model_to_load): 
-  loaded_model.append((ml[0], ml[1].load(mf)))
-
-"""# **Synthetic Data Generation**"""
-
-synthetic_data = []
-for lm in loaded_model: 
-  synthetic_data.append((lm[0], lm[1].sample(n_to_generate)))
-=======
 if training is True: 
   model_file = []
   model_to_load = []
@@ -291,7 +249,6 @@ if training is True:
   synthetic_data = []
   for lm in loaded_model: 
     synthetic_data.append((lm[0], lm[1].sample(n_to_generate)))
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
 
 """# **Synthetic Data Exploratory Analysis**
 
@@ -300,36 +257,6 @@ if training is True:
 The aggregated score is a value between 0 and 1, and it is an average of all the following metrics
 """
 
-<<<<<<< HEAD
-scored_and_synth_data = []
-for sd in synthetic_data:
-  try:
-    print("\nMethod: ",sd[0])
-    explore_data(sd[1])
-    score = evaluate(sd[1], data)
-    print("\n\nScore: ", score)
-    scored_and_synth_data.append((sd[0], sd[1], score))  
-  except:
-    print("Error")
-
-total_time = timeit.default_timer() - start_global_time
-
-for sas in scored_and_synth_data:
-  sas[1].to_csv(dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.csv', sep=',')
-
-for sas in scored_and_synth_data:
-  sas[1].to_excel(dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.xlsx')
-
-print("Global Exectution Time: ", total_time)
-
-"""#**Model Evaluation**
-
-Loading the trained model...
-"""
-
-if training is False: 
-  pass
-=======
 if training is True: 
   scored_and_synth_data = []
   for sd in synthetic_data:
@@ -376,7 +303,6 @@ if training is False:
   synthetic_data = model.sample(n_to_generate)
 
 model
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
 
 """#**Statistical Metrics**
 
@@ -388,13 +314,8 @@ The metrics of this family compare the tables by running different types of stat
 """
 
 if OS!="Linux" or colab_active is True:
-<<<<<<< HEAD
-  print(CSTest.compute(real_data, synthetic_data))
-  print(KSTest.compute(real_data, synthetic_data))
-=======
   print(CSTest.compute(data, synthetic_data))
   print(KSTest.compute(data, synthetic_data))
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
 
 """#**Likelihood Metrics**
 
@@ -411,8 +332,6 @@ if OS!="Linux" or colab_active is True:
   print(BNLikelihood.compute(data.fillna(0), synthetic_data.fillna(0)))
   print(BNLogLikelihood.compute(data.fillna(0), synthetic_data.fillna(0)))
 
-<<<<<<< HEAD
-=======
 """#**Detection Metrics**
 
 The metrics of this family evaluate how hard it is to distinguish the synthetic data from the real data by using a Machine Learning model. To do this, the metrics will shuffle the real data and synthetic data together with flags indicating whether the data is real or synthetic, and then cross validate a Machine Learning model that tries to predict this flag. The output of the metrics will be the 1 minus the average ROC AUC score across all the cross validation splits.
@@ -426,7 +345,6 @@ Such metrics are:
 
 
 
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
 """#**Privacy Metrics**
 
 This family of metrics measures the privacy of a synthetic dataset by positing the question: given the synthetic data, can an attacker predict sensitive attributes in the real dataset? These models accomplish this by fitting an adversarial attacker model on the synthetic data to predict sensitive attributes from “key” attributes and then evaluating its accuracy on the real data.
@@ -528,8 +446,4 @@ if OS!="Linux" or colab_active is True:
   inputData=sas[1]
   pd.DataFrame(inputData).COD_CELLA_CHIAMATA.plot()
 
-<<<<<<< HEAD
   data.COD_CELLA_CHIAMATA.value_counts()
-=======
-  data.COD_CELLA_CHIAMATA.value_counts()
->>>>>>> aa419c6d9a74f5455bcb1cd513ab9bb3c156d550
