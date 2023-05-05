@@ -47,6 +47,13 @@ export_preprocessed_orig_data = True
 read_synth_data_from_file = False
 verbose = False
 
+# tests
+cs = True
+ks = True
+bn = True
+bnl = True
+ld = False
+
 # Libraries Installation Section
 
 if install_libraries is True: 
@@ -164,53 +171,55 @@ for path in files:
     # Statistical Metrics**
 
     # Chi-Squared test 
-    start_test_time = timeit.default_timer()
-    results = CSTest.compute(orig_data_new, synth_data)
-    print("Chi-Squared Test Test Results: ", results)
-    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-        f.writelines("Chi-Squared Test Test Results: " +str(results))
-    print("Chi-Squared Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
-    
+    if cs is True: 
+        start_test_time = timeit.default_timer()
+        results = CSTest.compute(orig_data_new, synth_data)
+        print("Chi-Squared Test Test Results: ", results)
+        with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+            f.writelines("Chi-Squared Test Test Results: " +str(results))
+        print("Chi-Squared Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
 
     # Inverted Kolmogorov-Smirnov
     # We preliminarly convert categorical variabels into numeric in order to calculate the Kolmogorov-Smirnov test
-    start_test_time = timeit.default_timer()
-    tmp_orig_data_new = orig_data_new.copy()
-    tmp_synth_data = synth_data.copy()
-    tmp_orig_data_new.CELL_CALL_CODE = pd.to_numeric(tmp_orig_data_new.CELL_CALL_CODE)
-    tmp_orig_data_new.NUM_CALLER_KEY = pd.to_numeric(tmp_orig_data_new.NUM_CALLER_KEY)
-    tmp_synth_data.CELL_CALL_CODE = pd.to_numeric(tmp_synth_data.CELL_CALL_CODE)
-    tmp_synth_data.NUM_CALLER_KEY = pd.to_numeric(tmp_synth_data.NUM_CALLER_KEY)
-    results = KSTest.compute(tmp_orig_data_new, tmp_synth_data)
-    print("Kolmogorov-Smirnov Test Test Results: ", results)
-    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-        f.writelines("\n\nKolmogorov-Smirnov Test Test Results: " +str(results))
-    print("Kolmogorov-Smirnov Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
+    if ks is True: 
+        start_test_time = timeit.default_timer()
+        tmp_orig_data_new = orig_data_new.copy()
+        tmp_synth_data = synth_data.copy()
+        tmp_orig_data_new.CELL_CALL_CODE = pd.to_numeric(tmp_orig_data_new.CELL_CALL_CODE)
+        tmp_orig_data_new.NUM_CALLER_KEY = pd.to_numeric(tmp_orig_data_new.NUM_CALLER_KEY)
+        tmp_synth_data.CELL_CALL_CODE = pd.to_numeric(tmp_synth_data.CELL_CALL_CODE)
+        tmp_synth_data.NUM_CALLER_KEY = pd.to_numeric(tmp_synth_data.NUM_CALLER_KEY)
+        results = KSTest.compute(tmp_orig_data_new, tmp_synth_data)
+        print("Kolmogorov-Smirnov Test Test Results: ", results)
+        with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+            f.writelines("\n\nKolmogorov-Smirnov Test Test Results: " +str(results))
+        print("Kolmogorov-Smirnov Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
 
     # Likelihood Metrics
-    start_test_time = timeit.default_timer()
-    results = BNLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
-    print("BNLikelihood Test Results: ", results)
-    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-        f.writelines("\n\nBNLikelihood Test Results: " +str(results))
-    print("BNLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
+    if bn is True: 
+        start_test_time = timeit.default_timer()
+        results = BNLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
+        print("BNLikelihood Test Results: ", results)
+        with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+            f.writelines("\n\nBNLikelihood Test Results: " +str(results))
+        print("BNLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
     
-    start_test_time = timeit.default_timer()
-    results = BNLogLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
-    print("BNLogLikelihood Test Results: ", results)
-    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-        f.writelines("\n\nBNLogLikelihood Test Results: " +str(results))
-    print("BNLogLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
+    if bnl is True: 
+        start_test_time = timeit.default_timer()
+        results = BNLogLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
+        print("BNLogLikelihood Test Results: ", results)
+        with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+            f.writelines("\n\nBNLogLikelihood Test Results: " +str(results))
+        print("BNLogLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
 
     # Detection Metrics
-    '''
-    start_test_time = timeit.default_timer()
-    results = LogisticDetection.compute(orig_data_new, synth_data)
-    print("Detection Metrics Test n.1 (Logistic) Results: ", results)
-    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-        f.writelines("\n\nDetection Metrics Test n.1 (Logistic) Results: " +str(results))
-    print("Detection Metrics Test n.1 (Logistic) - Elapsed Time = ", timeit.default_timer() - start_test_time)
-    '''
+    if ld is True: 
+        start_test_time = timeit.default_timer()
+        results = LogisticDetection.compute(orig_data_new, synth_data)
+        print("Detection Metrics Test n.1 (Logistic) Results: ", results)
+        with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+            f.writelines("\n\nDetection Metrics Test n.1 (Logistic) Results: " +str(results))
+        print("Detection Metrics Test n.1 (Logistic) - Elapsed Time = ", timeit.default_timer() - start_test_time)
 
 '''
 start_test_time = timeit.default_timer()
