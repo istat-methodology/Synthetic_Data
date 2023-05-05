@@ -5,3 +5,5 @@ Chi-Squared Test Test Results: 1.0
 Kolmogorov-Smirnov Test Test Results: 0.9321416666666665
 
 BNLikelihood Test Results: 0.00017365
+
+BNLogLikelihood Test Results: -17.408758328010933
