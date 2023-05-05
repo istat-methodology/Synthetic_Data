@@ -14,6 +14,11 @@ import sys
 import platform
 import timeit
 import pdb
+from pathlib import Path
+
+# All Hyper-parameters
+
+epochs = 20
 
 # Initializations 
 
@@ -33,11 +38,14 @@ if not os.path.exists('./Output/Pictures'):
 dataset = 'telephony'   # satgpa, acs, telephony
 orig_data_path = './syntetic_telephony.xlsx'
 #synth_data_path = './Output/telephony_synth_data_generated_by_method_copulagantotal_time_3_epochs_10000_obs_26.8_score_-1.xlsx'
-synth_data_path = './Output/telephony_synth_data_generated_by_method_copulagantotal_time_50_epochs_10000_obs_565.57_score_-1.xlsx'
+#synth_data_path = './Output/telephony_synth_data_generated_by_method_copulagantotal_time_50_epochs_10000_obs_565.57_score_-1.xlsx'
+synth_data_path = './Output'
 synth_data_name = os.path.basename(synth_data_path).rsplit('.', 1)[0]
 display_matches = False
 install_libraries = False
 export_preprocessed_orig_data = True
+read_synth_data_from_file = False
+verbose = False
 
 # Libraries Installation Section
 
@@ -48,6 +56,7 @@ if install_libraries is True:
 
 # All Imports
 
+import glob
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -63,6 +72,8 @@ from sdv.metrics.tabular import LogisticDetection, SVCDetection                 
 from sdv.metrics.tabular import MulticlassDecisionTreeClassifier                    # Machine Learning Efficacy Metrics¶
 from sdv.metrics.tabular import NumericalLR
 
+from sdv.tabular import CopulaGAN
+
 from synth_utility_libs import explore_data, preprocess_telephony_data
 
 # All Settings
@@ -71,107 +82,137 @@ start_global_time = timeit.default_timer()
 pd.set_option('display.max_columns', 500) 
 pd.set_option('display.max_rows', 500) 
 
-# Original Data Reading
+# Model Definition
+cg_model = CopulaGAN(
+  epochs=epochs,
+  batch_size=100,
+  generator_dim=(256, 256, 256),
+  discriminator_dim=(256, 256, 256)
+)
 
-xl_file = pd.ExcelFile(orig_data_path)
-dfs = {sheet_name: xl_file.parse(sheet_name) for sheet_name in xl_file.sheet_names}
-orig_data = dfs['Sheet1']
+# Look for all models and Synthetic Data Generation into specific folders
 
-# Original Data Preprocessing
-
-if dataset is 'telephony':
-    print("\n\nSample of Real Telephony Data: \n\n", orig_data.head)
+files = [str(f) for f in sorted(Path('./').rglob('*_'+str(epochs)+'_*.pkl'))]
+files.sort(key = lambda x: int(x.split('_')[4]))
+for path in files:
+    print('\n\n'+path)
     
-    orig_data_new = preprocess_telephony_data(orig_data)                                  # Data Preprocessing for Telephony
+    if not os.path.exists('./Output/'+path.split('.')[0]):
+       os.makedirs('./Output/'+path.split('.')[0])
 
-    print("\n\nSample of Real Preprocessed Telephony Data: \n\n", orig_data_new.head)
+    cg_model = cg_model.load(path)
 
-    explore_data(orig_data_new)
+    n_to_generate = int(path.split('_')[4])
 
-    # Removing C character from the Original Data
-    orig_data_new["CELL_CALL_CODE"] = orig_data_new["CELL_CALL_CODE"].str.replace("C","")
-    orig_data_new["NUM_CALLER_KEY"] = orig_data_new["NUM_CALLER_KEY"].str.replace("C","")
+    # Original Data Reading
     
-# Original Data Exports
+    xl_file = pd.ExcelFile(orig_data_path)
+    dfs = {sheet_name: xl_file.parse(sheet_name) for sheet_name in xl_file.sheet_names}
+    orig_data = dfs['Sheet1']
 
-if export_preprocessed_orig_data is True: 
-    orig_data_new.to_excel('./Output/'+os.path.basename(orig_data_path).rsplit('.', 1)[0]+'_preprocessed_export.xlsx')
-    orig_data_new.to_csv('./Output'+os.path.basename(orig_data_path).rsplit('.', 1)[0]+'_preprocessed_export.csv')
+    # Original Data Preprocessing
+    
+    if dataset is 'telephony':
+        if verbose is True: 
+            print("\n\nSample of Real Telephony Data: \n\n", orig_data.head)
+        
+        orig_data_new = preprocess_telephony_data(orig_data, verbose)                                  # Data Preprocessing for Telephony
+    
+        if verbose is True: 
+            print("\n\nSample of Real Preprocessed Telephony Data: \n\n", orig_data_new.head)
+    
+        if verbose is True: 
+            explore_data(orig_data_new)
 
-# Synthetic Data Reading
+        # Removing C character from the Original Data
+        orig_data_new["CELL_CALL_CODE"] = orig_data_new["CELL_CALL_CODE"].str.replace("C","")
+        orig_data_new["NUM_CALLER_KEY"] = orig_data_new["NUM_CALLER_KEY"].str.replace("C","")
+    
+        # Original Data Exports
+    
+    if export_preprocessed_orig_data is True: 
+        orig_data_new.to_excel('./Output/telephony_preprocessed_export.xlsx')
+        orig_data_new.to_csv('./Output/telephony_preprocessed_export.csv')
 
-xl_file = pd.ExcelFile(synth_data_path)
-dfs = {sheet_name: xl_file.parse(sheet_name) for sheet_name in xl_file.sheet_names}
-synth_data = dfs['Sheet1']
+    # Synthetic Data Reading
+    if read_synth_data_from_file is True: 
+        xl_file = pd.ExcelFile(synth_data_path)
+        dfs = {sheet_name: xl_file.parse(sheet_name) for sheet_name in xl_file.sheet_names}
+        synth_data = dfs['Sheet1']
+        
+        # Synthetic Data Preprocessing
+        synth_data.drop("Unnamed: 0", axis=1, inplace=True)
+    else: 
+        synth_data = cg_model.sample(n_to_generate)                 # Data Generation
 
-# Synthetic Data Preprocessing
+    if dataset is 'telephony':
+        # Removing C character from the Synthetic Data
+        synth_data["CELL_CALL_CODE"] = synth_data["CELL_CALL_CODE"].str.replace("C","")
+        synth_data["NUM_CALLER_KEY"] = synth_data["NUM_CALLER_KEY"].str.replace("C","")
 
-synth_data.drop("Unnamed: 0", axis=1, inplace=True)
-# Removing C character from the Synthetic Data
-synth_data["CELL_CALL_CODE"] = synth_data["CELL_CALL_CODE"].str.replace("C","")
-synth_data["NUM_CALLER_KEY"] = synth_data["NUM_CALLER_KEY"].str.replace("C","")
+        synth_data.to_excel('./Output/'+path.split('.')[0]+'/telephony_synth_data_generated_by_method_'+str(epochs)+'_epochs_'+str(n_to_generate)+'_obs_.xlsx')
+        synth_data.to_csv('./Output/'+path.split('.')[0]+'/telephony_synth_data_generated_by_method_'+str(epochs)+'_epochs_'+str(n_to_generate)+'_obs_.csv')
+    
+    if verbose is True: 
+        explore_data(synth_data)
+        
+    # Model Evaluation via SDGym Tools
+    
+    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'w') as f:
+        f.writelines("SD GYM Tests Results: \n\n")
 
-explore_data(synth_data)
+    # Statistical Metrics**
 
-# Model Evaluation via SDGym Tools
+    # Chi-Squared test 
+    start_test_time = timeit.default_timer()
+    results = CSTest.compute(orig_data_new, synth_data)
+    print("Chi-Squared Test Test Results: ", results)
+    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+        f.writelines("Chi-Squared Test Test Results: " +str(results))
+    print("Chi-Squared Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
+    
 
-with open('./Output/'+synth_data_name+'_sd_gym_tests.txt', 'w') as f:
-    f.writelines("SD GYM Tests Results: \n\n")
+    # Inverted Kolmogorov-Smirnov
+    # We preliminarly convert categorical variabels into numeric in order to calculate the Kolmogorov-Smirnov test
+    start_test_time = timeit.default_timer()
+    tmp_orig_data_new = orig_data_new.copy()
+    tmp_synth_data = synth_data.copy()
+    tmp_orig_data_new.CELL_CALL_CODE = pd.to_numeric(tmp_orig_data_new.CELL_CALL_CODE)
+    tmp_orig_data_new.NUM_CALLER_KEY = pd.to_numeric(tmp_orig_data_new.NUM_CALLER_KEY)
+    tmp_synth_data.CELL_CALL_CODE = pd.to_numeric(tmp_synth_data.CELL_CALL_CODE)
+    tmp_synth_data.NUM_CALLER_KEY = pd.to_numeric(tmp_synth_data.NUM_CALLER_KEY)
+    results = KSTest.compute(tmp_orig_data_new, tmp_synth_data)
+    print("Kolmogorov-Smirnov Test Test Results: ", results)
+    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+        f.writelines("\n\nKolmogorov-Smirnov Test Test Results: " +str(results))
+    print("Kolmogorov-Smirnov Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
 
-# Statistical Metrics**
+    # Likelihood Metrics
+    start_test_time = timeit.default_timer()
+    results = BNLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
+    print("BNLikelihood Test Results: ", results)
+    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+        f.writelines("\n\nBNLikelihood Test Results: " +str(results))
+    print("BNLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
+    
+    start_test_time = timeit.default_timer()
+    results = BNLogLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
+    print("BNLogLikelihood Test Results: ", results)
+    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+        f.writelines("\n\nBNLogLikelihood Test Results: " +str(results))
+    print("BNLogLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
 
-# Chi-Squared test 
+    # Detection Metrics
+    '''
+    start_test_time = timeit.default_timer()
+    results = LogisticDetection.compute(orig_data_new, synth_data)
+    print("Detection Metrics Test n.1 (Logistic) Results: ", results)
+    with open('./Output/'+path.split('.')[0]+'/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
+        f.writelines("\n\nDetection Metrics Test n.1 (Logistic) Results: " +str(results))
+    print("Detection Metrics Test n.1 (Logistic) - Elapsed Time = ", timeit.default_timer() - start_test_time)
+    '''
 
-start_test_time = timeit.default_timer()
-results = CSTest.compute(orig_data_new, synth_data)
-print("\n\nChi-Squared Test Test Results: ", results)
-with open('./Output/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-    f.writelines("Chi-Squared Test Test Results: " +str(results))
-print("Chi-Squared Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
-
-# Inverted Kolmogorov-Smirnov
-
-# We preliminarly convert categorical variabels into numeric in order to calculate the Kolmogorov-Smirnov test
-
-start_test_time = timeit.default_timer()
-tmp_orig_data_new = orig_data_new.copy()
-tmp_synth_data = synth_data.copy()
-tmp_orig_data_new.CELL_CALL_CODE = pd.to_numeric(tmp_orig_data_new.CELL_CALL_CODE)
-tmp_orig_data_new.NUM_CALLER_KEY = pd.to_numeric(tmp_orig_data_new.NUM_CALLER_KEY)
-tmp_synth_data.CELL_CALL_CODE = pd.to_numeric(tmp_synth_data.CELL_CALL_CODE)
-tmp_synth_data.NUM_CALLER_KEY = pd.to_numeric(tmp_synth_data.NUM_CALLER_KEY)
-results = KSTest.compute(tmp_orig_data_new, tmp_synth_data)
-print("\nKolmogorov-Smirnov Test Test Results: ", results)
-with open('./Output/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-    f.writelines("\n\nKolmogorov-Smirnov Test Test Results: " +str(results))
-print("Kolmogorov-Smirnov Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
-      
-# Likelihood Metrics
-
-start_test_time = timeit.default_timer()
-results = BNLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
-print("\nBNLikelihood Test Results: ", results)
-with open('./Output/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-    f.writelines("\n\nBNLikelihood Test Results: " +str(results))
-print("BNLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
-
-start_test_time = timeit.default_timer()
-results = BNLogLikelihood.compute(orig_data_new.fillna(0), synth_data.fillna(0))
-print("\nBNLogLikelihood Test Results: ", results)
-with open('./Output/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-    f.writelines("\n\nBNLogLikelihood Test Results: " +str(results))
-print("BNLogLikelihood Metrics Test - Elapsed Time = ", timeit.default_timer() - start_test_time)
-
-# Detection Metrics
-
-start_test_time = timeit.default_timer()
-results = LogisticDetection.compute(orig_data_new, synth_data)
-print("Detection Metrics Test n.1 (Logistic) Results: ", results)
-with open('./Output/'+synth_data_name+'_sd_gym_tests.txt', 'a') as f:
-    f.writelines("\n\nDetection Metrics Test n.1 (Logistic) Results: " +str(results))
-print("Detection Metrics Test n.1 (Logistic) - Elapsed Time = ", timeit.default_timer() - start_test_time)
-
-
+'''
 start_test_time = timeit.default_timer()
 results = SVCDetection.compute(orig_data_new, synth_data)
 print("Detection Metrics Test n.2 (Support Vector Machine) Results: ", results)
@@ -199,7 +240,7 @@ print("Machine Learning Efficacy Metrics Test n.2 - Elapsed Time = ", timeit.def
 # Privacy Metrics 1
 
 '''
-
+'''
 start_test_time = timeit.default_timer()
 tmp_orig_data_new = orig_data_new.copy()
 tmp_synth_data = synth_data.copy()

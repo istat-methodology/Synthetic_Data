@@ -49,7 +49,7 @@ def data_download(file_to_download, gdrive_code, OS, uncompress = True):
   else: 
     return None
 
-def preprocess_telephony_data(data):
+def preprocess_telephony_data(data, verbose):
 
     data_new = data.copy()
       
@@ -77,7 +77,8 @@ def preprocess_telephony_data(data):
 
     data_new.FESTIVO = data_new.FESTIVO.astype("int64")
 
-    print("\n\nHolidays and Week-ends counting: \n\n", data_new[data_new["FESTIVO"] == True].count())
+    if verbose is True:
+        print("\n\nHolidays and Week-ends counting: \n\n", data_new[data_new["FESTIVO"] == True].count())
 
     # Categorical Data Adjustment
 

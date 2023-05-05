@@ -32,6 +32,8 @@ save_score = False
 install_libraries = False
 incremental_training = True
 it_gap = 1000
+verbose = True
+generate_last_synth_data = False
 
 # Libraries Installation Section
 
@@ -56,7 +58,7 @@ from synth_utility_libs import explore_data, data_download, preprocess_telephony
 
 # All Hyper-parameters
 
-epochs = 50
+epochs = 250
 
 # All Settings
 
@@ -110,7 +112,7 @@ else:
 if dataset is 'telephony':
     print("\n\nSample of Real Telephony Data: \n\n", data.head)
     
-    data_new = preprocess_telephony_data(data)                                  # Data Preprocessing for Telephony
+    data_new = preprocess_telephony_data(data, verbose)                                  # Data Preprocessing for Telephony
 
     print("\n\nSample of Real Preprocessed Telephony Data: \n\n", data_new.head)
 
@@ -176,61 +178,61 @@ else:
         model_names.append(model_path+dataset+'_copulagan_'+str(epochs)+'_epochs_'+str(len(data_new))+'_obs.pkl')
         model.save(model_names[-1])
 
-# Model Loading
-if training is False: 
-  model_names.append(model_path+model_to_test)
-
-print(model_names)
-
-# Model Loading and Preparation
-
-model_file = []
-model_to_load = []
-if gaussian_copula_synth_model == True:
-  model_file.append(model_names[0])
-  model_to_load.append(("GaussianCopula", GaussianCopula))
-if ctgan_synth_model == True:
-  model_file.append(model_names[-1])
-  model_to_load.append(("CTGAN", CTGAN))
-elif copula_gan_synth_model == True:
-  model_file.append(model_names[-1])
-  model_to_load.append(("COPULAGAN", CopulaGAN))
-
-loaded_model = []
-for mf,ml in zip(model_file, model_to_load): 
-  loaded_model.append((ml[0], ml[1].load(mf)))
-
 # Synthetic Data Generation
-
-synthetic_data = []
-for lm in loaded_model: 
-  synthetic_data.append((lm[0], lm[1].sample(n_to_generate)))
-
-# Synthetic Data Exploratory Analysis
-
-scored_and_synth_data = []
-for sd in synthetic_data:
-  try:
-    print("\nMethod: ",sd[0])
-    explore_data(sd[1])
-    if save_score is True: 
-      score = evaluate(sd[1], data_new)
-      pdb.set_trace()
-      print("\n\nScore: ", score)
-    else: 
-      score = -1
+if generate_last_synth_data is True: 
+    # Model Loading
+    if training is False: 
+      model_names.append(model_path+model_to_test)
     
-    scored_and_synth_data.append((sd[0], sd[1], score))  
-  except:
-    print("Error")
+    print(model_names)
 
-total_time = timeit.default_timer() - start_global_time
-
-print("Global Exectution Time: ", total_time)
-
-for sas in scored_and_synth_data:
-  sas[1].to_csv('./Output/'+dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(epochs)+'_epochs_'+str(len(data_new))+'_obs_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.csv', sep=',')
-
-for sas in scored_and_synth_data:
-  sas[1].to_excel('./Output/'+dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(epochs)+'_epochs_'+str(len(data_new))+'_obs_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.xlsx')
+    # Model Loading and Preparation
     
+    model_file = []
+    model_to_load = []
+    if gaussian_copula_synth_model == True:
+      model_file.append(model_names[0])
+      model_to_load.append(("GaussianCopula", GaussianCopula))
+    if ctgan_synth_model == True:
+      model_file.append(model_names[-1])
+      model_to_load.append(("CTGAN", CTGAN))
+    elif copula_gan_synth_model == True:
+      model_file.append(model_names[-1])
+      model_to_load.append(("COPULAGAN", CopulaGAN))
+    
+    loaded_model = []
+    for mf,ml in zip(model_file, model_to_load): 
+      loaded_model.append((ml[0], ml[1].load(mf)))
+    
+    synthetic_data = []
+    for lm in loaded_model: 
+      synthetic_data.append((lm[0], lm[1].sample(n_to_generate)))
+    
+    # Synthetic Data Exploratory Analysis
+    
+    scored_and_synth_data = []
+    for sd in synthetic_data:
+      try:
+        print("\nMethod: ",sd[0])
+        explore_data(sd[1])
+        if save_score is True: 
+          score = evaluate(sd[1], data_new)
+          print("\n\nScore: ", score)
+        else: 
+          score = -1
+        
+        scored_and_synth_data.append((sd[0], sd[1], score))  
+      except:
+        print("Error")
+    
+    total_time = timeit.default_timer() - start_global_time
+    
+    print("Global Exectution Time: ", total_time)
+    
+    for sas in scored_and_synth_data:
+      sas[1].to_csv('./Output/'+dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(epochs)+'_epochs_'+str(len(data_new))+'_obs_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.csv', sep=',')
+    
+    for sas in scored_and_synth_data:
+      sas[1].to_excel('./Output/'+dataset+'_synth_data_generated_by_method_'+sas[0].lower()+'total_time_'+str(epochs)+'_epochs_'+str(len(data_new))+'_obs_'+str(round(total_time,2))+'_score_'+str(round(sas[2],3))+'.xlsx')
+else:
+    print("Global Exectution Time: ", timeit.default_timer() - start_global_time)
