@@ -56,7 +56,7 @@ from synth_utility_libs import explore_data, data_download, preprocess_telephony
 
 # All Hyper-parameters
 
-epochs = 20
+epochs = 50
 
 # All Settings
 
