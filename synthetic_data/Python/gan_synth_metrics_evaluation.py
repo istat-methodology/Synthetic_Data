@@ -18,7 +18,7 @@ from pathlib import Path
 
 # All Hyper-parameters
 
-epochs = 20
+epochs = 100
 
 # Initializations 
 
@@ -128,18 +128,21 @@ for path in files:
         if verbose is True: 
             print("\n\nSample of Real Preprocessed Telephony Data: \n\n", orig_data_new.head)
     
-        if verbose is True: 
-            explore_data(orig_data_new)
-
         # Removing C character from the Original Data
         orig_data_new["CELL_CALL_CODE"] = orig_data_new["CELL_CALL_CODE"].str.replace("C","")
         orig_data_new["NUM_CALLER_KEY"] = orig_data_new["NUM_CALLER_KEY"].str.replace("C","")
     
         # Original Data Exports
     
-    if export_preprocessed_orig_data is True: 
-        orig_data_new.to_excel('./Output/telephony_preprocessed_export.xlsx')
-        orig_data_new.to_csv('./Output/telephony_preprocessed_export.csv')
+        if export_preprocessed_orig_data is True: 
+            orig_data_new.to_excel('./Output/telephony_preprocessed_export.xlsx')
+            orig_data_new.to_csv('./Output/telephony_preprocessed_export.csv')
+
+
+    orig_data_new = orig_data_new[0:n_to_generate]
+    
+    if verbose is True: 
+        explore_data(orig_data_new)
 
     # Synthetic Data Reading
     if read_synth_data_from_file is True: 

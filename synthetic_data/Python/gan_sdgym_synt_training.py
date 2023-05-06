@@ -32,6 +32,7 @@ save_score = False
 install_libraries = False
 incremental_training = True
 it_gap = 1000
+start_point = 1
 verbose = True
 generate_last_synth_data = False
 
@@ -58,7 +59,7 @@ from synth_utility_libs import explore_data, data_download, preprocess_telephony
 
 # All Hyper-parameters
 
-epochs = 250
+epochs = 500
 
 # All Settings
 
@@ -148,7 +149,7 @@ if ctgan_synth_model == True:
 if incremental_training is True:
   if copula_gan_synth_model == True: 
     
-    for i in range(1, int(len(data_new) / it_gap+1)):
+    for i in range(start_point, int(len(data_new) / it_gap+1)):
 
       print("Training on incremental data chunk:",str(i)," - ", str(int(i*it_gap)), " data points...")
 

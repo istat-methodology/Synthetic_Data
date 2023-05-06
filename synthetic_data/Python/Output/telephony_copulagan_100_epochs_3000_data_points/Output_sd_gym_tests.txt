@@ -1,0 +1,9 @@
+SD GYM Tests Results: 
+
+Chi-Squared Test Test Results: 1.0
+
+Kolmogorov-Smirnov Test Test Results: 0.8624444444444445
+
+BNLikelihood Test Results: 0.001400222222222222
+
+BNLogLikelihood Test Results: -16.067169637557544
