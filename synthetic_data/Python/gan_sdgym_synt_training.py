@@ -32,7 +32,7 @@ save_score = False
 install_libraries = False
 incremental_training = True
 it_gap = 1000
-start_point = 1
+start_point = 10
 verbose = True
 generate_last_synth_data = False
 
