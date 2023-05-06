@@ -18,7 +18,7 @@ from pathlib import Path
 
 # All Hyper-parameters
 
-epochs = 100
+epochs = 500
 
 # Initializations 
 
